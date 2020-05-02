@@ -10,9 +10,12 @@ import {
   IsDate,
   BeforeSave,
   DefaultScope,
+  BelongsToMany,
 } from 'sequelize-typescript';
 import bcrypt from 'bcrypt-nodejs';
 import { createJWToken } from '../util/auth';
+import { LovedProduct } from './LovedProduct';
+import { Product } from './Product';
 
 @DefaultScope(() => ({
   attributes: {
@@ -22,7 +25,7 @@ import { createJWToken } from '../util/auth';
 @Table
 export class User extends Model<User> {
   @Column
-  phone!: string;
+  phone: string;
 
   @IsEmail
   @Column
@@ -55,6 +58,9 @@ export class User extends Model<User> {
   @Default('PENDING')
   @Column(DataType.ENUM('ACTIVE', 'DELETED', 'PENDING'))
   status: 'ACTIVE' | 'DELETED' | 'PENDING';
+
+  @BelongsToMany(() => Product, () => LovedProduct)
+  lovedProducts: Product[];
 
   // HOOKS
   @BeforeSave

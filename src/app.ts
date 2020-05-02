@@ -72,9 +72,11 @@ app.use(multer);
  */
 import auth from './routes/auth';
 import user from './routes/user';
+import product from './routes/product';
 
 app.use('/auth', auth);
 app.use('/users', user);
+app.use('/products', product);
 
 /**
  * Error handler

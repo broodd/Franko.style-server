@@ -14,7 +14,7 @@ export function verifyJWTToken(token: string) {
 
 export function createJWToken(payload: any) {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: 3600,
+    expiresIn: '10y',
     algorithm: 'HS256',
   });
 }

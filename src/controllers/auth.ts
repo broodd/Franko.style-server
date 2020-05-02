@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
-import { isEmail, isLength, isMobilePhone } from 'validator';
+import { isEmail, isLength } from 'validator';
 import bcrypt from 'bcrypt-nodejs';
 import { createJWToken } from '../util/auth';
 import { AppError } from '../util/error-handler';
@@ -11,7 +11,7 @@ import { AppError } from '../util/error-handler';
  */
 export const postLogin = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
-  let errors = {} as any;
+  const errors = {} as any;
 
   if (!email || !isEmail(email)) {
     errors.email = 'Email is not valid';
@@ -60,11 +60,8 @@ export const postLogin = async (req: Request, res: Response, next: NextFunction)
  */
 export const postSignup = async (req: Request, res: Response, next: NextFunction) => {
   const { phone, email, password } = req.body;
-  let errors = {} as any;
+  const errors = {} as any;
 
-  if (!phone || !isMobilePhone(phone)) {
-    errors.phone = 'Phone is not valid';
-  }
   if (!email) {
     errors.email = 'Email is not valid';
   }
