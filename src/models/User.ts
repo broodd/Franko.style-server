@@ -16,6 +16,7 @@ import bcrypt from 'bcrypt-nodejs';
 import { createJWToken } from '../util/auth';
 import { LovedProduct } from './LovedProduct';
 import { Product } from './Product';
+import { CartProduct } from './CartProduct';
 
 @DefaultScope(() => ({
   attributes: {
@@ -61,6 +62,9 @@ export class User extends Model<User> {
 
   @BelongsToMany(() => Product, () => LovedProduct)
   lovedProducts: Product[];
+
+  @BelongsToMany(() => Product, () => CartProduct)
+  cartProducts: Product[];
 
   // HOOKS
   @BeforeSave

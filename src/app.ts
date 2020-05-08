@@ -3,6 +3,7 @@ import { sequelize } from './sequelize';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import logger from './util/logger';
+import { ENVIRONMENT } from './util/secrets';
 import lusca from 'lusca';
 import path from 'path';
 // import { User } from './models/User';
@@ -16,7 +17,7 @@ const app = express();
  * Connect to DB
  */
 sequelize
-  // .sync({ force: true })
+  // .sync({ force: ENVIRONMENT !== 'production' && true })
   .sync()
   .catch((err: Error) => {
     logger.error(
@@ -73,10 +74,14 @@ app.use(multer);
 import auth from './routes/auth';
 import user from './routes/user';
 import product from './routes/product';
+import category from './routes/category';
+import sprint from './routes/sprint';
 
 app.use('/auth', auth);
 app.use('/users', user);
 app.use('/products', product);
+app.use('/categories', category);
+app.use('/sprints', sprint);
 
 /**
  * Error handler

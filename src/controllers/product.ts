@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AppError } from '../util/error-handler';
 import { Product } from '../models/Product';
 import { User } from '../models/User';
+import { Sequelize } from 'sequelize-typescript';
 
 /**
  * GET /products/:id
@@ -9,8 +10,34 @@ import { User } from '../models/User';
  */
 export const getProduct = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const user = res.locals.user;
 
-  const product: Product = await Product.findByPk(id, {});
+  const likedProductsSQL = user
+    ? [
+        {
+          model: User,
+          as: 'lovedUsers',
+          attributes: ['id'],
+          through: {
+            attributes: [] as any,
+            where: { userId: user.id },
+          },
+        },
+        {
+          model: User,
+          as: 'cartUsers',
+          attributes: ['id'],
+          through: {
+            attributes: [] as any,
+            where: { userId: user.id },
+          },
+        },
+      ]
+    : undefined;
+
+  const product: Product = await Product.findByPk(id, {
+    include: likedProductsSQL,
+  });
 
   return res.json({
     product,
@@ -22,7 +49,7 @@ export const getProduct = async (req: Request, res: Response) => {
  * Get products.
  */
 export const getProducts = async (req: Request, res: Response) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 6 } = req.query;
   const offset = (page - 1) * +limit;
   const user = res.locals.user;
 
@@ -33,7 +60,6 @@ export const getProducts = async (req: Request, res: Response) => {
           as: 'lovedUsers',
           attributes: ['id'],
           through: {
-            // attributes: [[fn('COUNT', col('lovedUsers')), 'loved']],
             attributes: [] as any,
             where: { userId: user.id },
           },
@@ -58,13 +84,13 @@ export const getProducts = async (req: Request, res: Response) => {
  * Get my loved products.
  */
 export const getLovedProducts = async (req: Request, res: Response) => {
-  const { page = 1, limit = 10 } = req.query;
-  const offset = (page - 1) * +limit;
+  const { page = 1, limit = 6 } = req.query;
+  const offset = req.query.offset ? +req.query.offset : (page - 1) * +limit;
 
   const user = res.locals.user;
 
   const products = await user.getLovedProducts({
-    order: [['createdAt', 'DESC']],
+    order: [[Sequelize.literal('LovedProduct.createdAt'), 'DESC']],
     offset,
     limit: +limit,
   });
@@ -75,14 +101,44 @@ export const getLovedProducts = async (req: Request, res: Response) => {
 };
 
 /**
+ * GET /products/cart
+ * Get my cart products.
+ */
+export const getCartProducts = async (req: Request, res: Response) => {
+  const { page = 1, limit = 6 } = req.query;
+  const offset = (page - 1) * +limit;
+
+  const user = res.locals.user;
+
+  const products = await user.getCartProducts({
+    order: [['createdAt', 'DESC']],
+    offset,
+    limit: +limit,
+  });
+
+  const total = await user.getCartProducts({
+    attributes: [[Sequelize.fn('sum', Sequelize.col('price')), 'total']],
+  });
+
+  return res.json({
+    total,
+    products,
+  });
+};
+
+/**
  * POST /products
  * Create product.
  */
 export const postProduct = async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, price } = req.body;
 
   if (!name) {
     throw new AppError('Name is empty');
+  }
+
+  if (!price) {
+    throw new AppError('Price is empty');
   }
 
   const product: Product = await Product.create({
@@ -139,6 +195,34 @@ export const putLovedProduct = async (req: Request, res: Response) => {
     await user.removeLovedProducts(product);
   } else {
     await user.addLovedProducts(product);
+  }
+
+  return res.json({
+    action: !action,
+    product,
+  });
+};
+
+/**
+ * PUT /products/:id/cart
+ * Add or remove from cart product.
+ */
+export const putCartProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const user = res.locals.user;
+
+  const product: Product = await Product.findByPk(id);
+
+  if (!product) {
+    throw new AppError('Product not found', 404);
+  }
+
+  const action = await user.hasCartProducts(product);
+
+  if (action) {
+    await user.removeCartProducts(product);
+  } else {
+    await user.addCartProducts(product);
   }
 
   return res.json({

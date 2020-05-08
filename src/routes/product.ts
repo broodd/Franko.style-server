@@ -11,6 +11,7 @@ import checkRole from '../middlewares/checkRole';
 import * as productController from '../controllers/product';
 
 product.get('/loved', authGuard, asyncWrapper(productController.getLovedProducts));
+product.get('/cart', authGuard, asyncWrapper(productController.getCartProducts));
 product.get('/', asyncWrapper(productController.getProducts));
 product.get('/:id', asyncWrapper(productController.getProduct));
 
@@ -28,6 +29,7 @@ product.put(
   asyncWrapper(productController.putProduct)
 );
 product.put('/:id/loved', authGuard, asyncWrapper(productController.putLovedProduct));
+product.put('/:id/cart', authGuard, asyncWrapper(productController.putCartProduct));
 
 product.delete(
   '/:id',
