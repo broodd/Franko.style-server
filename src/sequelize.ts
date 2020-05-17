@@ -1,11 +1,15 @@
 import { Sequelize } from 'sequelize-typescript';
 import { DB_NAME, DB_USER, DB_PASS, DB_HOST } from './util/secrets';
 
+// import sequelizeHierarchy from 'sequelize-hierarchy';
+
 // export default new Sequelize(DB_NAME, DB_USER, DB_PASS, {
 //   dialect: 'mysql'
 //   // storage: ':memory:',
 //   // models: [__dirname + '/models']
 // });
+
+// sequelizeHierarchy(Sequelize);
 
 export const sequelize = new Sequelize({
   dialect: 'mysql',

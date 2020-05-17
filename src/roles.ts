@@ -11,9 +11,12 @@ ac.grant('MODERATOR')
   .createAny('product')
   .updateAny('product')
   .deleteAny('product')
-  .createAny('sprints')
-  .updateAny('sprints')
-  .deleteAny('sprints');
+  .createAny('sprint')
+  .updateAny('sprint')
+  .deleteAny('sprint')
+  .createAny('category')
+  .updateAny('category')
+  .deleteAny('category');
 
 ac.grant('ADMIN').extend('MODERATOR').updateAny('user').deleteAny('user');
 

@@ -15,20 +15,24 @@ export class Category extends Model<Category> {
   @Column
   name!: string;
 
-  @Column
+  @Column({
+    type: DataType.STRING,
+    get: function () {
+      return `${
+        this.getDataValue('image')
+          ? 'http://localhost:3000/static/images/' + this.getDataValue('image')
+          : ''
+      }`.trim();
+    },
+  })
   image: string;
-
-  @Column(DataType.VIRTUAL(DataType.STRING))
-  get imageSrc(this: Category): string {
-    return `${this.image ? 'http://localhost:3000/static/images/' + this.image : ''}`.trim();
-  }
 
   @ForeignKey(() => Category)
   parentId: number;
 
   @HasMany(() => Category)
-  childrens: Category[];
+  children: Category[];
 
   @BelongsToMany(() => Product, () => ProductCategory)
-  products: Category[];
+  products: Product[];
 }

@@ -12,6 +12,7 @@ import * as productController from '../controllers/product';
 
 product.get('/loved', authGuard, asyncWrapper(productController.getLovedProducts));
 product.get('/cart', authGuard, asyncWrapper(productController.getCartProducts));
+product.get('/category/:id', authGuard, asyncWrapper(productController.getProductsByCategory));
 product.get('/', asyncWrapper(productController.getProducts));
 product.get('/:id', asyncWrapper(productController.getProduct));
 

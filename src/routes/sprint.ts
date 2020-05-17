@@ -15,21 +15,21 @@ sprint.get('/', asyncWrapper(sprintController.getSprints));
 sprint.post(
   '/',
   authGuard,
-  checkRole('createAny', 'sprints'),
+  checkRole('createAny', 'sprint'),
   asyncWrapper(sprintController.postSprint)
 );
 
 sprint.put(
   '/:id',
   authGuard,
-  checkRole('updateAny', 'sprints'),
+  checkRole('updateAny', 'sprint'),
   asyncWrapper(sprintController.putSprint)
 );
 
 sprint.delete(
   '/:id',
   authGuard,
-  checkRole('deleteAny', 'sprints'),
+  checkRole('deleteAny', 'sprint'),
   asyncWrapper(sprintController.deleteSprint)
 );
 

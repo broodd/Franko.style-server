@@ -5,8 +5,6 @@ const storage = multer.diskStorage({
   destination: (req: Request, file: any, cb: CallableFunction) => {
     if (file.mimetype.includes('image')) {
       cb(undefined, 'static/images');
-    } else {
-      cb(undefined, 'static/files');
     }
   },
   filename: (req: Request, file: any, cb: CallableFunction) => {
@@ -24,4 +22,4 @@ const storage = multer.diskStorage({
 //   }
 // };
 
-export default multer({ storage }).fields([{ name: 'image' }, { name: 'file' }]);
+export default multer({ storage }).fields([{ name: 'images' }, { name: 'image', maxCount: 1 }]);

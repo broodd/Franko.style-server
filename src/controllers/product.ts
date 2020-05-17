@@ -3,6 +3,8 @@ import { AppError } from '../util/error-handler';
 import { Product } from '../models/Product';
 import { User } from '../models/User';
 import { Sequelize } from 'sequelize-typescript';
+import { Category } from '../models/Category';
+import { getUploadedImages } from '../util/common';
 
 /**
  * GET /products/:id
@@ -80,6 +82,39 @@ export const getProducts = async (req: Request, res: Response) => {
 };
 
 /**
+ * GET /products/category/:id
+ * Get porducts by category.
+ */
+export const getProductsByCategory = async (req: Request, res: Response) => {
+  const { page = 1, limit = 10 } = req.query;
+  const { id } = req.params;
+  const offset = (page - 1) * +limit;
+
+  const products = await Product.findAll({
+    include: [
+      {
+        attributes: [],
+        model: Category,
+        through: {
+          attributes: [],
+          where: {
+            categoryId: +id,
+          },
+        },
+        required: true,
+      },
+    ],
+    order: [['createdAt', 'DESC']],
+    offset,
+    limit: +limit,
+  });
+
+  return res.json({
+    products,
+  });
+};
+
+/**
  * GET /products/loved
  * Get my loved products.
  */
@@ -131,7 +166,7 @@ export const getCartProducts = async (req: Request, res: Response) => {
  * Create product.
  */
 export const postProduct = async (req: Request, res: Response) => {
-  const { name, price } = req.body;
+  const { name, price, categories, sizes } = req.body;
 
   if (!name) {
     throw new AppError('Name is empty');
@@ -141,9 +176,18 @@ export const postProduct = async (req: Request, res: Response) => {
     throw new AppError('Price is empty');
   }
 
+  const images = getUploadedImages(req);
+
   const product: Product = await Product.create({
     name,
+    price,
+    sizes,
+    images,
   });
+
+  if (categories && categories.length) {
+    product.$add('categories', categories);
+  }
 
   return res.json({
     product,
@@ -156,7 +200,7 @@ export const postProduct = async (req: Request, res: Response) => {
  */
 export const putProduct = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, price, sizes, categories } = req.body;
 
   const product: Product = await Product.findByPk(id);
 
@@ -166,6 +210,18 @@ export const putProduct = async (req: Request, res: Response) => {
 
   if (name) {
     product.name = name;
+  }
+
+  if (price) {
+    product.price = price;
+  }
+
+  if (sizes) {
+    product.sizes = sizes;
+  }
+
+  if (categories && categories.length) {
+    product.$set('categories', categories);
   }
 
   await product.save();

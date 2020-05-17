@@ -17,7 +17,7 @@ const app = express();
  * Connect to DB
  */
 sequelize
-  // .sync({ force: ENVIRONMENT !== 'production' && true })
+  // .sync({ force: ENVIRONMENT !== 'production' })
   .sync()
   .catch((err: Error) => {
     logger.error(
@@ -89,6 +89,7 @@ app.use('/sprints', sprint);
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const status = err.statusCode || 500;
   const error = typeof err === 'object' ? err.message : err;
+  console.log('--- err', err);
 
   logger.error(`[${status}]: `, error);
   res.status(status).json({

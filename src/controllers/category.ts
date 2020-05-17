@@ -3,6 +3,7 @@ import { AppError } from '../util/error-handler';
 import fs from 'fs';
 import path from 'path';
 import { Category } from '../models/Category';
+import { getUploadedImage } from '../util/common';
 
 /**
  * GET /categories
@@ -10,16 +11,14 @@ import { Category } from '../models/Category';
  */
 export const getCategories = async (req: Request, res: Response, next: NextFunction) => {
   const categories = await Category.findAll({
-    where: {
-      parentId: null,
-    },
     include: [
       {
         model: Category,
-        as: 'childrens',
+        as: 'children',
       },
     ],
   });
+  // hierarchy: true,
 
   return res.json({
     categories,
@@ -32,24 +31,21 @@ export const getCategories = async (req: Request, res: Response, next: NextFunct
  */
 export const postCategory = async (req: Request, res: Response, next: NextFunction) => {
   const { name, parentId } = req.body;
-  // const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  // const image = files['image'] && files['image'][0] ? files['image'][0].filename : undefined;
 
   if (!name) {
     throw new AppError('Name is empty');
   }
-  // if (!image) {
-  //   throw new AppError('Image is empty');
-  // }
   let parent: Category;
   if (parentId) {
-    parent = await Category.findByPk(parentId);
+    parent = await Category.findByPk(+parentId);
   }
+
+  const image = getUploadedImage(req);
 
   const category: Category = await Category.create({
     name,
-    // image,
     parentId: parent && parent.id ? parent.id : undefined,
+    image,
   });
 
   return res.json({
@@ -62,11 +58,8 @@ export const postCategory = async (req: Request, res: Response, next: NextFuncti
  * Update category.
  */
 export const putCategory = async (req: Request, res: Response, next: NextFunction) => {
-  // const user = res.locals.user;
   const { id } = req.params;
   const { name, parentId } = req.body;
-  // const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  // const image = files['image'] && files['image'][0] ? files['image'][0].filename : undefined;
 
   const category: Category = await Category.findByPk(id);
 
@@ -80,14 +73,17 @@ export const putCategory = async (req: Request, res: Response, next: NextFunctio
   if (parentId) {
     category.parentId = parentId;
   }
-  // if (image) {
-  //   if (category.image) {
-  //     const filePath = path.join(__dirname, '../../static/images', category.image);
-  //     fs.unlink(filePath, () => {});
-  //   }
 
-  //   category.image = image;
-  // }
+  const image = getUploadedImage(req);
+
+  if (image) {
+    if (category.image) {
+      const filePath = path.join(__dirname, '../../static/images', category.image);
+      fs.unlink(filePath, () => {});
+    }
+
+    category.image = image;
+  }
 
   await category.save();
 
