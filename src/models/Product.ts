@@ -49,6 +49,9 @@ export class Product extends Model<Product> {
   @BelongsToMany(() => User, () => LovedProduct)
   lovedUsers: User[];
 
+  // @BelongsToMany(() => Size, () => CartProduct)
+  // cartSizes: Size[];
+
   @BelongsToMany(() => User, () => CartProduct)
   cartUsers: User[];
 

@@ -17,8 +17,11 @@ const app = express();
  * Connect to DB
  */
 sequelize
-  // .sync({ force: ENVIRONMENT !== 'production' })
-  .sync()
+  .sync({ force: ENVIRONMENT !== 'production' })
+  // .sync()
+  .then(() => {
+    sequelize.query(`ALTER TABLE CartProducts DROP INDEX CartProducts_userId_productId_unique;`);
+  })
   .catch((err: Error) => {
     logger.error(
       `Error occurred during an attempt to establish connection with the database: %O`,
@@ -76,6 +79,7 @@ import user from './routes/user';
 import product from './routes/product';
 import category from './routes/category';
 import sprint from './routes/sprint';
+import { CartProduct } from './models/CartProduct';
 
 app.use('/auth', auth);
 app.use('/users', user);
