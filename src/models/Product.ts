@@ -16,11 +16,9 @@ export class Product extends Model<Product> {
   @Column({
     type: DataType.STRING,
     get() {
-      return '';
-      // return JSON.parse(JSON.parse(this.getDataValue('sizes')));
+      return JSON.parse(JSON.parse(this.getDataValue('sizes')));
     },
     set(value) {
-      console.log('--- value', value, typeof value);
       this.setDataValue('sizes', JSON.stringify(value));
     },
   })
@@ -29,19 +27,18 @@ export class Product extends Model<Product> {
   @Column({
     type: DataType.STRING,
     get() {
-      console.log('--- ', this.getDataValue('images'), typeof this.getDataValue('images'));
-      return '';
-      // return JSON.parse(JSON.parse(this.getDataValue('images')));
+      const imagesArray: string[] = JSON.parse(JSON.parse(this.getDataValue('images')));
+      return imagesArray.map((img) => 'http://localhost:3000/static/images/' + img);
     },
     set(value) {
       this.setDataValue('images', JSON.stringify(JSON.stringify(value)));
     },
   })
-  images: string;
+  images: string[] | string;
 
   @Column(DataType.VIRTUAL(DataType.STRING))
   get image(this: Product): string {
-    const imagesDB = this.getDataValue('images');
+    const imagesDB = this.getDataValue('images') as string;
     if (imagesDB) {
       const images = JSON.parse(JSON.parse(imagesDB));
       return images && images[0] ? 'http://localhost:3000/static/images/' + images[0] : '';
@@ -61,10 +58,5 @@ export class Product extends Model<Product> {
   @Column(DataType.VIRTUAL(DataType.BOOLEAN))
   get loved(this: Product): boolean {
     return this.getDataValue('lovedUsers') && this.getDataValue('lovedUsers').length ? true : false;
-  }
-
-  @Column(DataType.VIRTUAL(DataType.BOOLEAN))
-  get cart(this: Product): boolean {
-    return this.getDataValue('cartUsers') && this.getDataValue('cartUsers').length ? true : false;
   }
 }

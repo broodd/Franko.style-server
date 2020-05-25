@@ -5,6 +5,9 @@ import { User } from '../models/User';
 import { Sequelize } from 'sequelize-typescript';
 import { Category } from '../models/Category';
 import { getUploadedImages } from '../util/common';
+import path from 'path';
+import fs from 'fs';
+import { CartProduct } from '../models/CartProduct';
 
 /**
  * GET /products/:id
@@ -151,6 +154,21 @@ export const getCartProducts = async (req: Request, res: Response) => {
     limit: +limit,
   });
 
+  // const products = await Product.findAll({
+  //   include: [
+  //     {
+  //       model: CartProduct,
+  //       through: {
+  //         attributes: [],
+  //         where: {
+  //           userId: user.id,
+  //         },
+  //       },
+  //       required: true,
+  //     },
+  //   ],
+  // });
+
   const total = await user.getCartProducts({
     attributes: [[Sequelize.fn('sum', Sequelize.col('price')), 'total']],
   });
@@ -200,7 +218,7 @@ export const postProduct = async (req: Request, res: Response) => {
  */
 export const putProduct = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, price, sizes, categories } = req.body;
+  const { name, price, sizes, categories, images } = req.body;
 
   const product: Product = await Product.findByPk(id);
 
@@ -222,6 +240,23 @@ export const putProduct = async (req: Request, res: Response) => {
 
   if (categories && categories.length) {
     product.$set('categories', categories);
+  }
+
+  const uploadImages = getUploadedImages(req);
+
+  if (uploadImages || images === 'false') {
+    const productImages = product.images as string[];
+    if (productImages && productImages.length) {
+      productImages.map((img) => {
+        const imageName = img.slice(img.lastIndexOf('images/') + 7);
+        const filePath = path.join(__dirname, '../../static/images', imageName);
+        fs.unlink(filePath, () => {});
+      });
+    }
+    product.images = [];
+  }
+  if (uploadImages) {
+    product.images = uploadImages;
   }
 
   await product.save();

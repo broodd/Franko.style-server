@@ -59,7 +59,7 @@ export const postCategory = async (req: Request, res: Response, next: NextFuncti
  */
 export const putCategory = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { name, parentId } = req.body;
+  const { name, parentId, image } = req.body;
 
   const category: Category = await Category.findByPk(id);
 
@@ -74,15 +74,18 @@ export const putCategory = async (req: Request, res: Response, next: NextFunctio
     category.parentId = parentId;
   }
 
-  const image = getUploadedImage(req);
+  const uploadImage = getUploadedImage(req);
 
-  if (image) {
+  if (uploadImage || image === 'false') {
     if (category.image) {
-      const filePath = path.join(__dirname, '../../static/images', category.image);
+      const imageName = category.image.slice(category.image.lastIndexOf('images/') + 7);
+      const filePath = path.join(__dirname, '../../static/images', imageName);
       fs.unlink(filePath, () => {});
     }
-
-    category.image = image;
+    category.image = '';
+  }
+  if (uploadImage) {
+    category.image = uploadImage;
   }
 
   await category.save();
