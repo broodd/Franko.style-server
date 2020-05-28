@@ -20,14 +20,14 @@ export function isNumberInRage(number: number, base: number, step: number = 1) {
 
 export function getUploadedImage(req: Request): string | undefined {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  return files && files['image'] && files['image'][0] ? files['image'][0].filename : undefined;
+  return files && files['image'] && files['image'][0] ? files['image'][0].path : undefined;
 }
 
 export function getUploadedImages(req: Request): string[] | undefined {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   return files && files['images'] && files['images'].length
     ? files['images'].map((file) => {
-        return file.filename;
+        return file.path;
       })
     : undefined;
 }

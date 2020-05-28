@@ -1,25 +1,19 @@
-import { Request } from 'express';
 import multer from 'multer';
+const cloudinary = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const storage = multer.diskStorage({
-  destination: (req: Request, file: any, cb: CallableFunction) => {
-    if (file.mimetype.includes('image')) {
-      cb(undefined, 'static/images');
-    }
-  },
-  filename: (req: Request, file: any, cb: CallableFunction) => {
-    const date = new Date().toISOString().replace(/:/g, '_');
-    const name = file.originalname.toLowerCase().replace(/[\s]/g, '_');
-    cb(undefined, `${date}-${name}`);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
 });
 
-// const fileFilter = (req: Request, file: any, cb: CallableFunction) => {
-//   if (file.mimetype.includes('image')) {
-//     cb(undefined, true);
-//   } else {
-//     cb(undefined, false);
-//   }
-// };
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'franko-style',
+    format: 'jpg',
+  },
+});
 
 export default multer({ storage }).fields([{ name: 'images' }, { name: 'image', maxCount: 1 }]);

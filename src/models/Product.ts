@@ -4,7 +4,6 @@ import { LovedProduct } from './LovedProduct';
 import { CartProduct } from './CartProduct';
 import { Category } from './Category';
 import { ProductCategory } from './ProductCategory';
-import { SERVER_URL } from '../util/secrets';
 
 @Table
 export class Product extends Model<Product> {
@@ -29,7 +28,7 @@ export class Product extends Model<Product> {
     type: DataType.STRING,
     get() {
       const imagesArray: string[] = JSON.parse(JSON.parse(this.getDataValue('images')));
-      return imagesArray.map((img) => SERVER_URL + '/static/images/' + img);
+      return imagesArray;
     },
     set(value) {
       this.setDataValue('images', JSON.stringify(JSON.stringify(value)));
@@ -42,7 +41,7 @@ export class Product extends Model<Product> {
     const imagesDB = this.getDataValue('images') as string;
     if (imagesDB) {
       const images = JSON.parse(JSON.parse(imagesDB));
-      return images && images[0] ? SERVER_URL + '/static/images/' + images[0] : '';
+      return images && images[0] ? images[0] : '';
     }
     return '';
   }
