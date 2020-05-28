@@ -1,13 +1,13 @@
+import { Sequelize } from 'sequelize-typescript';
 import { Request, Response } from 'express';
 import { AppError } from '../util/error-handler';
 import { Product } from '../models/Product';
 import { User } from '../models/User';
-import { Sequelize } from 'sequelize-typescript';
 import { Category } from '../models/Category';
+import { CartProduct } from '../models/CartProduct';
 import { getUploadedImages } from '../util/common';
 import path from 'path';
 import fs from 'fs';
-import { CartProduct } from '../models/CartProduct';
 
 /**
  * GET /products/:id
@@ -143,38 +143,12 @@ export const getLovedProducts = async (req: Request, res: Response) => {
  * Get my cart products.
  */
 export const getCartProducts = async (req: Request, res: Response) => {
-  const { page = 1, limit = 6 } = req.query;
-  const offset = (page - 1) * +limit;
-
-  const user = res.locals.user;
-
-  const products = await user.getCartProducts({
+  const products = await CartProduct.findAll({
+    include: [Product],
     order: [['createdAt', 'DESC']],
-    offset,
-    limit: +limit,
-  });
-
-  // const products = await Product.findAll({
-  //   include: [
-  //     {
-  //       model: CartProduct,
-  //       through: {
-  //         attributes: [],
-  //         where: {
-  //           userId: user.id,
-  //         },
-  //       },
-  //       required: true,
-  //     },
-  //   ],
-  // });
-
-  const total = await user.getCartProducts({
-    attributes: [[Sequelize.fn('sum', Sequelize.col('price')), 'total']],
   });
 
   return res.json({
-    total,
     products,
   });
 };
@@ -198,7 +172,7 @@ export const postProduct = async (req: Request, res: Response) => {
 
   const product: Product = await Product.create({
     name,
-    price,
+    price: +price,
     sizes,
     images,
   });
@@ -231,7 +205,7 @@ export const putProduct = async (req: Request, res: Response) => {
   }
 
   if (price) {
-    product.price = price;
+    product.price = +price;
   }
 
   if (sizes) {
@@ -295,30 +269,115 @@ export const putLovedProduct = async (req: Request, res: Response) => {
 };
 
 /**
- * PUT /products/:id/cart
- * Add or remove from cart product.
+ * POST /products/:id/cart
+ * Add to cart product.
  */
-export const putCartProduct = async (req: Request, res: Response) => {
-  const { id } = req.params;
+export const postCartProduct = async (req: Request, res: Response) => {
   const user = res.locals.user;
+  const id = req.params.id;
+  let size = req.body.size || 'UNIVERSAL';
+  size = size.toUpperCase();
+  let cartProduct;
 
   const product: Product = await Product.findByPk(id);
 
   if (!product) {
-    throw new AppError('Product not found', 404);
+    throw new AppError('product_not_found', 404);
   }
 
-  const action = await user.hasCartProducts(product);
+  if (!Object.keys(product.sizes).includes(size)) {
+    throw new AppError('product_not_have_this_size', 403);
+  }
 
-  if (action) {
-    await user.removeCartProducts(product);
+  cartProduct = await CartProduct.findOne({
+    where: {
+      productId: product.id,
+      userId: user.id,
+      selectedSize: size,
+    },
+  });
+
+  if (cartProduct) {
+    throw new AppError('product_already_in_cart', 403);
+  }
+
+  const totalCartProducts = await CartProduct.count({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  if (totalCartProducts >= 10) {
+    throw new AppError('max_cart_size', 403);
+  }
+
+  cartProduct = await CartProduct.create({
+    productId: product.id,
+    userId: user.id,
+    selectedSize: size,
+  });
+
+  cartProduct.product = product;
+
+  return res.json({
+    cartProduct,
+    product,
+  });
+};
+
+/**
+ * PUT products/cart/:id/count
+ * Update count in cart product.
+ */
+export const putCartProductCount = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const count = +req.body.count;
+
+  const cartProduct = await CartProduct.findByPk(id, {
+    include: [Product],
+  });
+
+  if (!cartProduct) {
+    throw new AppError('product_not_found', 404);
+  }
+
+  if (count && count >= 1) {
+    const sizes: any = cartProduct.product.sizes;
+    const selectedSize: string = cartProduct.selectedSize;
+    const maxCount: number = sizes[selectedSize];
+
+    if (maxCount >= count)
+      cartProduct.update({
+        count,
+      });
+    else throw new AppError('not_have_more_product_with_this_size', 404);
   } else {
-    await user.addCartProducts(product);
+    throw new AppError('not_valid', 403);
   }
 
   return res.json({
-    action: !action,
-    product,
+    // cartProduct,
+    count,
+  });
+};
+
+/**
+ * DELETE /products/cart/:id
+ * Delete from cart product.
+ */
+export const deleteCartProduct = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const cartProduct = await CartProduct.findByPk(id);
+
+  if (!cartProduct) {
+    throw new AppError('product_not_found', 404);
+  }
+
+  cartProduct.destroy();
+
+  return res.json({
+    cartProduct,
   });
 };
 

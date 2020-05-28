@@ -7,7 +7,7 @@ import {
   Min,
   PrimaryKey,
   AutoIncrement,
-  Index,
+  BelongsTo,
 } from 'sequelize-typescript';
 import { Product } from './Product';
 import { User } from './User';
@@ -38,6 +38,9 @@ export class CartProduct extends Model<CartProduct> {
   @ForeignKey(() => Product)
   @Column
   productId: number;
+
+  @BelongsTo(() => Product)
+  product: Product;
 
   @ForeignKey(() => User)
   @Column

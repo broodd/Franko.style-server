@@ -19,7 +19,7 @@ export class Product extends Model<Product> {
       return JSON.parse(JSON.parse(this.getDataValue('sizes')));
     },
     set(value) {
-      this.setDataValue('sizes', JSON.stringify(value));
+      this.setDataValue('sizes', JSON.stringify(value).toUpperCase());
     },
   })
   sizes: string;
