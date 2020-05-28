@@ -9,6 +9,7 @@ import {
 } from 'sequelize-typescript';
 import { ProductCategory } from './ProductCategory';
 import { Product } from './Product';
+import { SERVER_URL } from '../util/secrets';
 
 @Table
 export class Category extends Model<Category> {
@@ -20,7 +21,7 @@ export class Category extends Model<Category> {
     get: function () {
       return `${
         this.getDataValue('image')
-          ? 'http://localhost:3000/static/images/' + this.getDataValue('image')
+          ? SERVER_URL + '/static/images/' + this.getDataValue('image')
           : ''
       }`.trim();
     },

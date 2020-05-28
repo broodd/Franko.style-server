@@ -13,6 +13,8 @@ if (fs.existsSync('.env')) {
 export const ENVIRONMENT = process.env.NODE_ENV;
 // const prod = ENVIRONMENT === 'production'; // Anything else is treated as 'dev'
 
+export const SERVER_URL = process.env.SERVER_URL;
+
 export const JWT_SECRET = process.env['JWT_SECRET'];
 if (!JWT_SECRET) {
   logger.error('No JWT secret. Set JWT_SECRET environment variable.');
