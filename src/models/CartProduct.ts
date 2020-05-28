@@ -12,8 +12,7 @@ import {
 import { Product } from './Product';
 import { User } from './User';
 
-/* 
-	IMPORTANT !!!
+/* IMPORTANT !!!
 	in db need remove auto created index for fields(productId, userId)
 	or create migration and use it, but typescript not use it
 	so I just do query when sync sequelize

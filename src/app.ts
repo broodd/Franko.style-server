@@ -3,7 +3,7 @@ import { sequelize } from './sequelize';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import logger from './util/logger';
-import { ENVIRONMENT } from './util/secrets';
+// import { ENVIRONMENT } from './util/secrets';
 import lusca from 'lusca';
 import path from 'path';
 
