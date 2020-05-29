@@ -1,4 +1,5 @@
 import multer from 'multer';
+import path from 'path';
 const cloudinary = require('cloudinary');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -12,7 +13,10 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'franko-style',
-    format: 'jpg',
+    format: (req: Request, file: Express.Multer.File) => {
+      const extetion = path.extname(file.originalname);
+      return extetion == '.svg' ? 'svg' : 'jpg';
+    },
   },
 });
 

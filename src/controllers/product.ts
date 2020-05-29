@@ -6,8 +6,6 @@ import { User } from '../models/User';
 import { Category } from '../models/Category';
 import { CartProduct } from '../models/CartProduct';
 import { getUploadedImages } from '../util/common';
-import path from 'path';
-import fs from 'fs';
 
 /**
  * GET /products/:id
@@ -161,11 +159,11 @@ export const postProduct = async (req: Request, res: Response) => {
   const { name, price, categories, sizes } = req.body;
 
   if (!name) {
-    throw new AppError('Name is empty');
+    throw new AppError('name_is_empty');
   }
 
   if (!price) {
-    throw new AppError('Price is empty');
+    throw new AppError('price_is_empty');
   }
 
   const images = getUploadedImages(req);
@@ -197,7 +195,7 @@ export const putProduct = async (req: Request, res: Response) => {
   const product: Product = await Product.findByPk(id);
 
   if (!product) {
-    throw new AppError('Product not found', 404);
+    throw new AppError('product_not_found', 404);
   }
 
   if (name) {
@@ -219,14 +217,6 @@ export const putProduct = async (req: Request, res: Response) => {
   const uploadImages = getUploadedImages(req);
 
   if (uploadImages || images === 'false') {
-    const productImages = product.images as string[];
-    if (productImages && productImages.length) {
-      productImages.map((img) => {
-        const imageName = img.slice(img.lastIndexOf('images/') + 7);
-        const filePath = path.join(__dirname, '../../static/images', imageName);
-        fs.unlink(filePath, () => {});
-      });
-    }
     product.images = [];
   }
   if (uploadImages) {
@@ -251,7 +241,7 @@ export const putLovedProduct = async (req: Request, res: Response) => {
   const product: Product = await Product.findByPk(id);
 
   if (!product) {
-    throw new AppError('Product not found', 404);
+    throw new AppError('product_not_found', 404);
   }
 
   const action = await user.hasLovedProducts(product);
@@ -392,7 +382,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
   const product: Product = await Product.findByPk(id);
 
   if (!product) {
-    throw new AppError('Product not found', 404);
+    throw new AppError('product_not_found', 404);
   }
 
   await product.destroy();

@@ -25,7 +25,7 @@ export class Product extends Model<Product> {
   sizes: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     get() {
       const imagesArray: string[] = JSON.parse(JSON.parse(this.getDataValue('images')));
       return imagesArray;
@@ -35,6 +35,11 @@ export class Product extends Model<Product> {
     },
   })
   images: string[] | string;
+
+  @Column({
+    type: DataType.TEXT,
+  })
+  description: string;
 
   @Column(DataType.VIRTUAL(DataType.STRING))
   get image(this: Product): string {

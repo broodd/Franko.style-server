@@ -11,7 +11,7 @@ export const getUserInfo = async (req: Request, res: Response, next: NextFunctio
   const user: User = await User.findByPk(id);
 
   if (!user) {
-    throw new AppError('User not found', 404);
+    throw new AppError('user_not_found', 404);
   }
 
   return res.json({

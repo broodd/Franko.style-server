@@ -14,10 +14,10 @@ export const postLogin = async (req: Request, res: Response, next: NextFunction)
   const errors = {} as any;
 
   if (!email || !isEmail(email)) {
-    errors.email = 'Email is not valid';
+    errors.email = 'email_not_valid';
   }
   if (!password || !isLength(password, { min: 5 })) {
-    errors.password = 'Password to short';
+    errors.password = 'password_to_short';
   }
 
   if (Object.keys(errors).length) {
@@ -34,7 +34,7 @@ export const postLogin = async (req: Request, res: Response, next: NextFunction)
   });
 
   if (!user) {
-    throw new AppError('User not found', 404);
+    throw new AppError('user_not_found', 404);
   }
 
   const passwordCheck = bcrypt.compareSync(password, user.password);
@@ -50,7 +50,7 @@ export const postLogin = async (req: Request, res: Response, next: NextFunction)
       user,
     });
   } else {
-    throw new AppError('Account not found.', 404);
+    throw new AppError('user_not_found', 404);
   }
 };
 
@@ -63,10 +63,10 @@ export const postSignup = async (req: Request, res: Response, next: NextFunction
   const errors = {} as any;
 
   if (!email) {
-    errors.email = 'Email is not valid';
+    errors.email = 'email_not_valid';
   }
   if (!password || !isLength(password, { min: 5 })) {
-    errors.password = 'Password to short';
+    errors.password = 'password_to_short';
   }
 
   if (Object.keys(errors).length) {
@@ -80,7 +80,7 @@ export const postSignup = async (req: Request, res: Response, next: NextFunction
   });
 
   if (existingUser) {
-    throw new AppError({ email: 'Account with that email address already exists.' }, 403);
+    throw new AppError({ email: 'user_with_that_email_already_exists' }, 403);
   }
 
   const user: User = await User.create({

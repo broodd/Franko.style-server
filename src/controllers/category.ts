@@ -33,7 +33,7 @@ export const postCategory = async (req: Request, res: Response, next: NextFuncti
   const { name, parentId } = req.body;
 
   if (!name) {
-    throw new AppError('Name is empty');
+    throw new AppError('name_is_empty');
   }
   let parent: Category;
   if (parentId) {
@@ -64,7 +64,7 @@ export const putCategory = async (req: Request, res: Response, next: NextFunctio
   const category: Category = await Category.findByPk(id);
 
   if (!category) {
-    throw new AppError('Category not found', 404);
+    throw new AppError('not_found', 404);
   }
 
   if (name) {
@@ -106,7 +106,7 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
   const category: Category = await Category.findByPk(id);
 
   if (!category) {
-    throw new AppError('Book not found', 404);
+    throw new AppError('not_found', 404);
   }
 
   if (category.image) {

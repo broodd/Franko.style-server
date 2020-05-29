@@ -3,6 +3,7 @@ import { AppError } from '../util/error-handler';
 // import fs from 'fs';
 // import path from 'path';
 import { Sprint } from '../models/Sprint';
+import { getUploadedImage } from '../util/common';
 
 /**
  * GET /sprints
@@ -27,25 +28,19 @@ export const getSprints = async (req: Request, res: Response, next: NextFunction
  */
 export const postSprint = async (req: Request, res: Response, next: NextFunction) => {
   const { title, subtitle, link, order } = req.body;
-  // const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  // const image = files['image'] && files['image'][0] ? files['image'][0].filename : undefined;
 
-  if (!title) {
-    throw new AppError('Title is empty');
+  const image = getUploadedImage(req);
+
+  if (!image) {
+    throw new AppError('image_is_empty');
   }
-  if (!subtitle) {
-    throw new AppError('Subtitle is empty');
-  }
-  // if (!image) {
-  //   throw new AppError('Image is empty');
-  // }
 
   const sprint: Sprint = await Sprint.create({
     title,
     subtitle,
     link,
     order,
-    // image,
+    image,
   });
 
   return res.json({
@@ -58,16 +53,13 @@ export const postSprint = async (req: Request, res: Response, next: NextFunction
  * Update sprint.
  */
 export const putSprint = async (req: Request, res: Response, next: NextFunction) => {
-  // const user = res.locals.user;
   const { id } = req.params;
   const { title, subtitle, link, order } = req.body;
-  // const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  // const image = files['image'] && files['image'][0] ? files['image'][0].filename : undefined;
 
   const sprint: Sprint = await Sprint.findByPk(id);
 
   if (!sprint) {
-    throw new AppError('Sprint not found', 404);
+    throw new AppError('not_found', 404);
   }
 
   if (title) {
@@ -82,14 +74,12 @@ export const putSprint = async (req: Request, res: Response, next: NextFunction)
   if (order != undefined) {
     sprint.order = order;
   }
-  // if (image) {
-  //   if (category.image) {
-  //     const filePath = path.join(__dirname, '../../static/images', category.image);
-  //     fs.unlink(filePath, () => {});
-  //   }
 
-  //   category.image = image;
-  // }
+  const image = getUploadedImage(req);
+
+  if (image) {
+    sprint.image = image;
+  }
 
   await sprint.save();
 
@@ -109,13 +99,8 @@ export const deleteSprint = async (req: Request, res: Response, next: NextFuncti
   const sprint: Sprint = await Sprint.findByPk(id);
 
   if (!sprint) {
-    throw new AppError('Sprint not found', 404);
+    throw new AppError('not_found', 404);
   }
-
-  // if (category.image) {
-  //   const filePath = path.join(__dirname, '../../static/images', category.image);
-  //   fs.unlink(filePath, () => {});
-  // }
 
   await sprint.destroy();
 

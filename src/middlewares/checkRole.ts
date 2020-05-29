@@ -8,7 +8,7 @@ export default (action: string, resource: string) => {
     try {
       const permission = roles.can(res.locals.user.role || 'CLIENT')[action](resource);
       if (!permission.granted) {
-        return next(new AppError(`You don't have enough permission`, 403));
+        return next(new AppError(`you_not_have_enough_permission`, 403));
       }
       return next();
     } catch (err) {
