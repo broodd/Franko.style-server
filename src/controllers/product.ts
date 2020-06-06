@@ -141,7 +141,11 @@ export const getLovedProducts = async (req: Request, res: Response) => {
  * Get my cart products.
  */
 export const getCartProducts = async (req: Request, res: Response) => {
+  const user = res.locals.user;
   const products = await CartProduct.findAll({
+    where: {
+      userId: user.id,
+    },
     include: [Product],
     order: [['createdAt', 'DESC']],
   });
