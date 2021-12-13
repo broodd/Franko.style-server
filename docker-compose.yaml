@@ -1,0 +1,16 @@
+version: '2'
+services:
+  postgres:
+    image: mdillon/postgis:9.2-alpine
+    ports:
+      - '5432:5432'
+    networks:
+      - network
+    environment:
+      POSTGRES_DB: franko
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+
+networks:
+  network:
+    driver: bridge

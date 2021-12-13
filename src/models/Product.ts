@@ -14,25 +14,25 @@ export class Product extends Model<Product> {
   price!: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.JSON,
     get() {
-      return JSON.parse(JSON.parse(this.getDataValue('sizes')));
+      return this.getDataValue('sizes');
     },
-    set(value) {
-      this.setDataValue('sizes', JSON.stringify(value).toUpperCase());
+    set(value: string) {
+      this.setDataValue(
+        'sizes',
+        JSON.parse(
+          value.replace(/(\w+:)|(\w+ :)/g, function (matchedStr: string) {
+            return '"' + matchedStr.substring(0, matchedStr.length - 1).toUpperCase() + '":';
+          })
+        )
+      );
     },
   })
   sizes: string;
 
   @Column({
-    type: DataType.TEXT,
-    get() {
-      const imagesArray: string[] = JSON.parse(JSON.parse(this.getDataValue('images')));
-      return imagesArray;
-    },
-    set(value) {
-      this.setDataValue('images', JSON.stringify(JSON.stringify(value)));
-    },
+    type: DataType.JSON,
   })
   images: string[] | string;
 
@@ -42,13 +42,9 @@ export class Product extends Model<Product> {
   description: string;
 
   @Column(DataType.VIRTUAL(DataType.STRING))
-  get image(this: Product): string {
-    const imagesDB = this.getDataValue('images') as string;
-    if (imagesDB) {
-      const images = JSON.parse(JSON.parse(imagesDB));
-      return images && images[0] ? images[0] : '';
-    }
-    return '';
+  get image(): string {
+    const images = this.getDataValue('images');
+    return images && images[0] ? images[0] : '';
   }
 
   @BelongsToMany(() => User, () => LovedProduct)
@@ -64,7 +60,7 @@ export class Product extends Model<Product> {
   categories: Category[];
 
   @Column(DataType.VIRTUAL(DataType.BOOLEAN))
-  get loved(this: Product): boolean {
+  get loved(): boolean {
     return this.getDataValue('lovedUsers') && this.getDataValue('lovedUsers').length ? true : false;
   }
 }

@@ -126,7 +126,7 @@ export const getLovedProducts = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
   const products = await user.getLovedProducts({
-    order: [[Sequelize.literal('LovedProduct.createdAt'), 'DESC']],
+    order: [[Sequelize.literal('"LovedProduct"."createdAt"'), 'DESC']],
     offset,
     limit: +limit,
   });
